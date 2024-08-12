@@ -1,0 +1,89 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: static-website-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: static-website
+  template:
+    metadata:
+      labels:
+        app: static-website
+    spec:
+      containers:
+      - name: static-website
+        image: nitinsuvagia/staticwebsite:1.0.0
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: static-website-service
+spec:
+  selector:
+    app: static-website
+  ports:
+  - protocol: TCP
+    port: 8088
+    targetPort: 80
+  type: LoadBalancer
+#---
+#apiVersion: v1
+#kind: Secret
+#metadata:
+#  name: myapp-tls
+#  namespace: default
+#data:
+#  tls.crt: base64 encoded cert
+#  tls.key: base64 encoded key
+#type: kubernetes.io/tls
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: static-website-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  tls:
+  - hosts:
+    - my-static-website.com
+    secretName: myapp-tls
+  rules:
+  - host: my-static-website.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: static-website-service
+            port:
+              number: 8088
+  - host: subdomain.static-website.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: static-website-service
+            port:
+              number: 8088
+
+
+# ##################################################################
+# RUN COMMAND
+# kubectl apply -f complete-static-website-kube-file.yaml
+# After apply above file, run "kubectl get ingress" and wait for ADDRESS IP Assigned
+# NAME                     CLASS   HOSTS                   ADDRESS        PORTS   AGE
+# static-website-ingress   nginx   my-static-website.com   192.168.64.3   80      10m
+# After IP Assigned, run "sudo vim /etc/hosts" to assign this IP to any domain name
+# Add line in hosts file, like
+# 192.168.64.3    my-static-website.com
+# And, then save and quite from hosts file and browse above domain name
+# ##################################################################

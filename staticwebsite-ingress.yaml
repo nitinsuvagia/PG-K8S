@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: staticwebsite-ingress
+  namespace: default
+  labels:
+    name: staticwebsite-ingress
+spec:
+  rules:
+  - host: my-static-website.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: staticwebsite
+            port: 
+              number: 8080

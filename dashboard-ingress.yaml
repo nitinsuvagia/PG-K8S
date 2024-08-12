@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dashobard-ingress
+  namespace: kubernetes-dashboard
+  labels:
+    name: dashobard-ingress
+spec:
+  rules:
+  - host: myk8s-dashboard.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: kubernetes-dashboard
+            port: 
+              number: 80
