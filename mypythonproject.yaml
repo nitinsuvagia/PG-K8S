@@ -2,30 +2,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mypythonproject-deployment
+  name: mypython-dep
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: mypythonproject
+      app: mypython
   template:
     metadata:
       labels:
-        app: mypythonproject
+        app: mypython
     spec:
       containers:
-      - name: mypythonproject
-        image: nitinsuvagia/my-python-project:1.9.0
+      - name: mypython
+        image: nitinsuvagia/mypython:2.7.0
         ports:
         - containerPort: 8080
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mypythonproject-service
+  name: mypython-ser
 spec:
   selector:
-    app: mypythonproject
+    app: mypython
   ports:
   - protocol: TCP
     port: 80
@@ -35,7 +35,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: mypythonproject-ingress
+  name: mypython-ing
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
@@ -51,7 +51,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: mypythonproject-service
+            name: mypython-ser
             port:
               number: 80
 

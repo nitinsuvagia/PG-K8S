@@ -2,78 +2,61 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: static-website-deployment
+  name: dqpoc-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: static-website
+      app: dqpoc
   template:
     metadata:
       labels:
-        app: static-website
+        app: dqpoc
     spec:
       containers:
-      - name: static-website
-        image: nitinsuvagia/staticwebsite:1.0.0
+      - name: dqpoc
+        image: nitinsuvagia/qdpoc:3.2.0
+        imagePullPolicy: IfNotPresent
+        command: ["tail", "-f", "/dev/null"] # > tail -f /dev/null
+        #command: ["main.bat"]
         ports:
-        - containerPort: 80
+        - containerPort: 8080
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: static-website-service
+  name: dqpoc-service
 spec:
   selector:
-    app: static-website
+    app: dqpoc
   ports:
   - protocol: TCP
-    port: 8088
-    targetPort: 80
-  type: LoadBalancer
-#---
-#apiVersion: v1
-#kind: Secret
-#metadata:
-#  name: myapp-tls
-#  namespace: default
-#data:
-#  tls.crt: base64 encoded cert
-#  tls.key: base64 encoded key
-#type: kubernetes.io/tls
+    port: 80
+    targetPort: 8080
+  type: ClusterIP
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: static-website-ingress
+  name: dqpoc-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   tls:
   - hosts:
-    - my-static-website.com
+    - quantumdatalytica.com
     secretName: myapp-tls
   rules:
-  - host: my-static-website.com
+  - host: quantumdatalytica.com
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: static-website-service
+            name: dqpoc-service
             port:
-              number: 8088
-  - host: subdomain.static-website.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: static-website-service
-            port:
-              number: 8088
+              number: 80
 
 
 # ##################################################################
@@ -81,9 +64,9 @@ spec:
 # kubectl apply -f complete-static-website-kube-file.yaml
 # After apply above file, run "kubectl get ingress" and wait for ADDRESS IP Assigned
 # NAME                     CLASS   HOSTS                   ADDRESS        PORTS   AGE
-# static-website-ingress   nginx   my-static-website.com   192.168.64.3   80      10m
+# static-website-ingress   nginx   my-capstone-project.com 192.168.64.3   80      10m
 # After IP Assigned, run "sudo vim /etc/hosts" to assign this IP to any domain name
 # Add line in hosts file, like
-# 192.168.64.3    my-static-website.com
+# 192.168.64.3    my-capstone-project.com
 # And, then save and quite from hosts file and browse above domain name
 # ##################################################################
