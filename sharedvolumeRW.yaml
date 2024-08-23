@@ -1,0 +1,102 @@
+# PersistentVolume
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: myhost-volumne
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /Users/nitinsuvagiya/mnt/shared
+
+---
+# PersistentVolumeClaim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: myhost-volume-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+# Writer Job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: writer-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: writer
+        image: nitinsuvagia/sharedvolume:latest
+        command: ["python", "-u", "/app/writer.py"]
+        volumeMounts:
+        - name: myhostwriter-volume
+          mountPath: /mnt/shared
+      volumes:
+      - name: myhostwriter-volume
+        persistentVolumeClaim:
+          claimName: myhost-volume-claim
+      restartPolicy: OnFailure
+
+---
+# Reader Job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: reader-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: reader
+        image: nitinsuvagia/sharedvolume:latest
+        command: ["python", "-u", "/app/reader.py"]
+        volumeMounts:
+        - name: myhostreader-volume
+          mountPath: /mnt/shared
+      volumes:
+      - name: myhostreader-volume
+        persistentVolumeClaim:
+          claimName: myhost-volume-claim
+      restartPolicy: OnFailure
+
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: host-volume-service
+spec:
+  selector:
+    app: reader-job
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+
+---
+# Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: host-volume-ingress
+spec:
+  rules:
+  - host: my-host-volume-rw.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: host-volume-service
+            port:
+              number: 80
