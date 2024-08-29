@@ -1,0 +1,68 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: Choice Workflow
+spec:
+  entrypoint: main
+  templates:
+  - name: main
+    dag:
+      tasks:
+      - name: Password-Locker
+        template: PL
+      - name: Fetch-PMS-Data
+        template: FPD
+        dependencies:
+        - Password-Locker
+      - name: Process-Raw-Data
+        template: PRD
+        dependencies:
+        - Fetch-PMS-Data
+      - name: Annual-Summary
+        template: AS
+        dependencies:
+        - PRD
+      - name: 90Days-Forecast
+        template: 90DF
+        dependencies:
+        - PRD
+      - name: Email
+        template: EMAIL
+        dependencies:
+        - 90DF
+  
+  - name: PL
+    container:
+      image: alpine
+      command: ["sh", "-c"]
+      args: ["echo Running Machine : Process Locker"]
+
+  - name: FPD
+    container:
+      image: alpine
+      command: ["sh", "-c"]
+      args: ["echo Running Machine : Fetch PMS Data"]
+
+  - name: PRD
+    container:
+      image: alpine
+      command: ["sh", "-c"]
+      args: ["echo Running Machine : Process RAW Data"]
+
+  - name: AS
+    container:
+      image: alpine
+      command: ["sh", "-c"]
+      args: ["echo Running Machine : Annual Summery"]
+  
+  - name: 90DF
+    container:
+      image: alpine
+      command: ["sh", "-c"]
+      args: ["echo Running Machine : 90 Days Forecast"]
+
+  - name: EMAIL
+    container:
+      image: alpine
+      command: ["sh", "-c"]
+      args: ["echo Running Machine : SEND EMAIL"]

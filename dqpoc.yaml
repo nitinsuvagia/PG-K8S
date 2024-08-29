@@ -27,42 +27,42 @@ spec:
           type: DirectoryOrCreate
   backoffLimit: 1      
 
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: dqpoc-service
-spec:
-  selector:
-    app: dqpoc
-  ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 8080
-  type: ClusterIP
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: dqpoc-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-spec:
-  tls:
-  - hosts:
-    - quantumdatalytica.com
-    secretName: myapp-tls
-  rules:
-  - host: quantumdatalytica.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: dqpoc-service
-            port:
-              number: 80
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: dqpoc-service
+# spec:
+#   selector:
+#     app: dqpoc
+#   ports:
+#   - protocol: TCP
+#     port: 80
+#     targetPort: 8080
+#   type: ClusterIP
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: dqpoc-ingress
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: /
+# spec:
+#   tls:
+#   - hosts:
+#     - quantumdatalytica.com
+#     secretName: myapp-tls
+#   rules:
+#   - host: quantumdatalytica.com
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: dqpoc-service
+#             port:
+#               number: 80
 
 
 # ##################################################################
